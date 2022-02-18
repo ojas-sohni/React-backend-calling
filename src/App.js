@@ -48,10 +48,30 @@ class App extends Component {
   //apiEndpoint + "/" + post.id, post This means in our api endpoint we need to go to posts, find the post id and update the data which is second argument.
 
   handleDelete = async (post) => {
-    await axios.delete(apiEndpoint + "/" + post.id);
+    const originalPosts = this.state.posts;
 
     const posts = this.state.posts.filter((p) => p.id !== post.id);
     this.setState({ posts });
+
+    try {
+      await axios.delete(apiEndpoint + "/" + post.id);
+      //throw new Error("");
+    } catch (ex) {
+      //Expected errors (404: not found, 400: bad request) - client errors
+      // - Display a specific error message.
+      if (ex.response && ex.response.status === 404)
+        alert("This post has already been deleted.");
+      //
+      //Unexpected errors (network down, server down, DB down, bug in application)
+      //-Log them
+      //Display a generic and friendly error message.
+      else {
+        console.log("Logging the error", ex);
+        alert("An unexpected error occurred.");
+      }
+
+      this.setState({ posts: originalPosts });
+    }
   };
   //this.state.posts.filter((p) => p.id !== post.id) This will exclude the post we want to delete.
 

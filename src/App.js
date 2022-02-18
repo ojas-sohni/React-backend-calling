@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import axios from "axios";
 import "./App.css";
 
+const apiEndpoint = "https://jsonplaceholder.typicode.com/posts";
 class App extends Component {
   state = {
     posts: [],
@@ -9,9 +10,7 @@ class App extends Component {
 
   async componentDidMount() {
     //when we crete a promise, intially its in PENDING STATE -> RESOLVED (success) OR REJECTED (failure)
-    const { data: posts } = await axios.get(
-      "https://jsonplaceholder.typicode.com/posts"
-    );
+    const { data: posts } = await axios.get(apiEndpoint);
     this.setState({ posts });
   }
   // const promise = axios.get("https://jsonplaceholder.typicode.com/posts");
@@ -20,17 +19,41 @@ class App extends Component {
   //Promise is an object that holds result of an asynchronus operation.
   //An asynchronus operation is an operation which is going to complete in future.
   // Await is a keyword. whenever we use await, we should declare the function with async keyword.
-  handleAdd = () => {
-    console.log("Add");
+
+  handleAdd = async () => {
+    const obj = { title: "a", body: "b" };
+    const { data: post } = await axios.post(apiEndpoint, obj);
+
+    const posts = [post, ...this.state.posts];
+    this.setState({ posts });
   };
 
-  handleUpdate = (post) => {
-    console.log("Update", post);
+  //Creating a new object obj and display at the top following with rest of the data.
+  //Using post request we can send data to the server and update our database.
+  //apiEndpoint is the URL which we have defined and obj is the object which we are sending as a post request.
+
+  handleUpdate = async (post) => {
+    post.title = "UPDATED";
+    await axios.put(apiEndpoint + "/" + post.id, post);
+    //await axios.patch(apiEndpoint + "/" + post.id, {title: post.title});
+
+    const posts = [...this.state.posts];
+    const index = posts.indexOf(post);
+    posts[index] = { ...post };
+    this.setState({ posts });
   };
 
-  handleDelete = (post) => {
-    console.log("Delete", post);
+  //for updating we have 2 methods: patch and put.
+  //Patch is used to update one or more properties, Put is used to update all properties.
+  //apiEndpoint + "/" + post.id, post This means in our api endpoint we need to go to posts, find the post id and update the data which is second argument.
+
+  handleDelete = async (post) => {
+    await axios.delete(apiEndpoint + "/" + post.id);
+
+    const posts = this.state.posts.filter((p) => p.id !== post.id);
+    this.setState({ posts });
   };
+  //this.state.posts.filter((p) => p.id !== post.id) This will exclude the post we want to delete.
 
   render() {
     return (

@@ -1,8 +1,10 @@
 import React, { Component } from "react";
-import axios from "axios";
+import http from "./services/httpService";
 import "./App.css";
 
+//we have hidden axios behind http service module.
 const apiEndpoint = "https://jsonplaceholder.typicode.com/posts";
+
 class App extends Component {
   state = {
     posts: [],
@@ -10,10 +12,10 @@ class App extends Component {
 
   async componentDidMount() {
     //when we crete a promise, intially its in PENDING STATE -> RESOLVED (success) OR REJECTED (failure)
-    const { data: posts } = await axios.get(apiEndpoint);
+    const { data: posts } = await http.get(apiEndpoint);
     this.setState({ posts });
   }
-  // const promise = axios.get("https://jsonplaceholder.typicode.com/posts");
+  // const promise = http.get("https://jsonplaceholder.typicode.com/posts");
   // const response = await promise;
 
   //Promise is an object that holds result of an asynchronus operation.
@@ -22,7 +24,7 @@ class App extends Component {
 
   handleAdd = async () => {
     const obj = { title: "a", body: "b" };
-    const { data: post } = await axios.post(apiEndpoint, obj);
+    const { data: post } = await http.post(apiEndpoint, obj);
 
     const posts = [post, ...this.state.posts];
     this.setState({ posts });
@@ -34,8 +36,8 @@ class App extends Component {
 
   handleUpdate = async (post) => {
     post.title = "UPDATED";
-    await axios.put(apiEndpoint + "/" + post.id, post);
-    //await axios.patch(apiEndpoint + "/" + post.id, {title: post.title});
+    await http.put(apiEndpoint + "/" + post.id, post);
+    //await http.patch(apiEndpoint + "/" + post.id, {title: post.title});
 
     const posts = [...this.state.posts];
     const index = posts.indexOf(post);
@@ -54,21 +56,10 @@ class App extends Component {
     this.setState({ posts });
 
     try {
-      await axios.delete(apiEndpoint + "/" + post.id);
-      //throw new Error("");
+      await http.delete(apiEndpoint + "/" + post.id);
     } catch (ex) {
-      //Expected errors (404: not found, 400: bad request) - client errors
-      // - Display a specific error message.
       if (ex.response && ex.response.status === 404)
         alert("This post has already been deleted.");
-      //
-      //Unexpected errors (network down, server down, DB down, bug in application)
-      //-Log them
-      //Display a generic and friendly error message.
-      else {
-        console.log("Logging the error", ex);
-        alert("An unexpected error occurred.");
-      }
 
       this.setState({ posts: originalPosts });
     }
